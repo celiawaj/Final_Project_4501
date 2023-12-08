@@ -1,5 +1,5 @@
 DROP TABLE IF EXISTS zipcodes, complaints, trees, rents;
-CREATE TABLE zipcodes
+CREATE TABLE IF NOT EXISTS zipcodes
 (
     zipcode TEXT PRIMARY KEY,
     county TEXT,
@@ -7,31 +7,32 @@ CREATE TABLE zipcodes
 );
 CREATE INDEX zipcodes_geom_idx ON zipcodes USING GIST (geometry);
 
-CREATE TABLE complaints
+CREATE TABLE IF NOT EXISTS complaints
 (
     id INTEGER PRIMARY KEY,
     zipcode TEXT,
     date TIMESTAMP,
     complaint_type TEXT,
-    geometry GEOMETRY(Polygon, 4326)
+    geometry GEOMETRY(Point, 4326)
 );
 CREATE INDEX complaints_geom_idx ON complaints USING GIST (geometry);
 
-CREATE TABLE trees
+CREATE TABLE IF NOT EXISTS trees
 (
     id INTEGER PRIMARY KEY,
     zipcode TEXT,
     species TEXT,
     health TEXT,
     status TEXT,
-    geometry GEOMETRY(Polygon, 4326)
+    geometry GEOMETRY(Point, 4326)
 );
 CREATE INDEX trees_geom_idx ON trees USING GIST (geometry);
 
-CREATE TABLE rents
+CREATE TABLE IF NOT EXISTS rents
 (
     id INTEGER PRIMARY KEY,
     zipcode TEXT,
+    jan_rent FLOAT,
     aug_rent FLOAT,
     sep_rent FLOAT
 );
