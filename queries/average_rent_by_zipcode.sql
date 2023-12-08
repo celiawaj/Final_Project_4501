@@ -4,4 +4,4 @@ FROM trees
 LEFT OUTER JOIN rents ON trees.zipcode = rents.zipcode
 GROUP BY trees.zipcode
 ORDER BY COUNT(*) DESC
-LIMIT 10
+LIMIT 10;

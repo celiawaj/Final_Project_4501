@@ -26,6 +26,8 @@ SELECT * FROM (
          AND date_trunc('month', c.date) = '2023-01-01') AS complaint_count
     FROM
         rents r
+    WHERE
+        r.jan_rent IS NOT NULL
     GROUP BY
         r.zipcode
     ORDER BY
