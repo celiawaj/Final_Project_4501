@@ -30,9 +30,9 @@ CREATE INDEX trees_geom_idx ON trees USING GIST (geometry);
 
 CREATE TABLE IF NOT EXISTS rents
 (
-    id INTEGER PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
+    region_id INTEGER,
     zipcode TEXT,
-    jan_rent FLOAT,
-    aug_rent FLOAT,
-    sep_rent FLOAT
+    date DATE,
+    rent FLOAT
 );
