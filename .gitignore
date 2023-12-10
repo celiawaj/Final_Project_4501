@@ -2,4 +2,4 @@
 *.ipynb_checkpoints*
 __pycache__/
 
-# Add more files & directories as needed
+/data/
