@@ -1,36 +1,30 @@
 
-SELECT * FROM (
+SELECT
+    rs.zipcode,
+    TO_CHAR(AVG(rs.avg_rent), 'FM9,999,999.00') as average_rent,
+    COUNT(DISTINCT t.id) AS tree_count,
+    COUNT(DISTINCT c.id) AS complaint_count
+FROM (
     SELECT
         r.zipcode,
-        TO_CHAR(AVG(r.jan_rent), 'FM9,999,999.00') AS average_rent,
-        (SELECT COUNT(*) FROM trees t WHERE t.zipcode = r.zipcode) AS tree_count,
-        (SELECT COUNT(*) FROM complaints c 
-         WHERE c.zipcode = r.zipcode 
-         AND date_trunc('month', c.date) = '2023-01-01') AS complaint_count
-    FROM
-        rents r
-    GROUP BY
-        r.zipcode
-    ORDER BY
-        average_rent
-    LIMIT 5
-) AS LowestRent
-UNION ALL
-SELECT * FROM (
-    SELECT
-        r.zipcode,
-        TO_CHAR(AVG(r.jan_rent), 'FM9,999,999.00') AS average_rent,
-        (SELECT COUNT(*) FROM trees t WHERE t.zipcode = r.zipcode) AS tree_count,
-        (SELECT COUNT(*) FROM complaints c 
-         WHERE c.zipcode = r.zipcode 
-         AND date_trunc('month', c.date) = '2023-01-01') AS complaint_count
+        AVG(r.rent) AS avg_rent,
+        ROW_NUMBER() OVER (ORDER BY AVG(r.rent) ASC) AS low_rank,
+        ROW_NUMBER() OVER (ORDER BY AVG(r.rent) DESC) AS high_rank
     FROM
         rents r
     WHERE
-        r.jan_rent IS NOT NULL
+        r.date BETWEEN '2023-01-01' AND '2023-01-31'
+        AND r.rent IS NOT NULL
     GROUP BY
         r.zipcode
-    ORDER BY
-        average_rent DESC
-    LIMIT 5
-) AS HighestRent;
+) rs
+LEFT JOIN
+    trees t ON rs.zipcode = t.zipcode
+LEFT JOIN
+    complaints c ON rs.zipcode = c.zipcode
+WHERE
+    rs.low_rank <= 5 OR rs.high_rank <= 5
+GROUP BY
+    rs.zipcode, rs.avg_rent
+ORDER BY
+    rs.avg_rent, rs.zipcode;
