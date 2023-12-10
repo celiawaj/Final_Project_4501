@@ -9,7 +9,7 @@ CREATE INDEX zipcodes_geom_idx ON zipcodes USING GIST (geometry);
 
 CREATE TABLE IF NOT EXISTS complaints
 (
-    id INTEGER PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     zipcode TEXT,
     date TIMESTAMP,
     complaint_type TEXT,
@@ -19,7 +19,7 @@ CREATE INDEX complaints_geom_idx ON complaints USING GIST (geometry);
 
 CREATE TABLE IF NOT EXISTS trees
 (
-    id INTEGER PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     zipcode TEXT,
     species TEXT,
     health TEXT,
