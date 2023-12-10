@@ -1,0 +1,9 @@
+json
+pathlib
+urllib3
+geopandas
+matplotlib
+pandas
+requests
+SQLAlchemy
+psycopg2
