@@ -1,36 +1,59 @@
-
-SELECT * FROM (
+WITH RentSummary AS (
+        SELECT
+            r.zipcode,
+            AVG(r.rent) AS avg_rent
+        FROM
+            rents r
+        WHERE
+            r.date BETWEEN '2023-01-01' AND '2023-01-31'
+            AND r.rent IS NOT NULL
+        GROUP BY
+            r.zipcode
+    ),
+    RankedRents AS (
+        SELECT
+            zipcode,
+            avg_rent,
+            ROW_NUMBER() OVER (ORDER BY avg_rent ASC) AS low_rank,
+            ROW_NUMBER() OVER (ORDER BY avg_rent DESC) AS high_rank
+        FROM
+            RentSummary
+    ),
+    TreeCounts AS (
+        SELECT
+            zipcode,
+            COUNT(*) AS tree_count
+        FROM
+            trees
+        WHERE
+            status = 'Alive'
+        GROUP BY
+            zipcode
+    ),
+    ComplaintCounts AS (
+        SELECT
+            zipcode,
+            COUNT(*) AS complaint_count
+        FROM
+            complaints
+        WHERE
+            date BETWEEN '2023-01-01' AND '2023-01-31'
+        GROUP BY
+            zipcode
+    )
     SELECT
-        r.zipcode,
-        TO_CHAR(AVG(r.jan_rent), 'FM9,999,999.00') AS average_rent,
-        (SELECT COUNT(*) FROM trees t WHERE t.zipcode = r.zipcode) AS tree_count,
-        (SELECT COUNT(*) FROM complaints c 
-         WHERE c.zipcode = r.zipcode 
-         AND date_trunc('month', c.date) = '2023-01-01') AS complaint_count
+        R.zipcode,
+        TO_CHAR(R.avg_rent, 'FM9,999,999.00') as average_rent,
+        COALESCE(T.tree_count, 0) AS tree_count,
+        COALESCE(C.complaint_count, 0) AS complaint_count
     FROM
-        rents r
-    GROUP BY
-        r.zipcode
-    ORDER BY
-        average_rent
-    LIMIT 5
-) AS LowestRent
-UNION ALL
-SELECT * FROM (
-    SELECT
-        r.zipcode,
-        TO_CHAR(AVG(r.jan_rent), 'FM9,999,999.00') AS average_rent,
-        (SELECT COUNT(*) FROM trees t WHERE t.zipcode = r.zipcode) AS tree_count,
-        (SELECT COUNT(*) FROM complaints c 
-         WHERE c.zipcode = r.zipcode 
-         AND date_trunc('month', c.date) = '2023-01-01') AS complaint_count
-    FROM
-        rents r
+        RankedRents R
+    LEFT JOIN
+        TreeCounts T ON R.zipcode = T.zipcode
+    LEFT JOIN
+        ComplaintCounts C ON R.zipcode = C.zipcode
     WHERE
-        r.jan_rent IS NOT NULL
-    GROUP BY
-        r.zipcode
+        R.low_rank <= 5 OR R.high_rank <= 5
     ORDER BY
-        average_rent DESC
-    LIMIT 5
-) AS HighestRent;
+        R.avg_rent, R.zipcode;
+    
